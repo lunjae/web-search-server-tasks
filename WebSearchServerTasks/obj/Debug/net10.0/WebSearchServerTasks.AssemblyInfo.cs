@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WebSearchServerTasks")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+61d98e8b3ad3863d0f037c74ebc052c476e88dd7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+96d8b3b7293666cd5ed58a88ac3400f234acffaa")]
 [assembly: System.Reflection.AssemblyProductAttribute("WebSearchServerTasks")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WebSearchServerTasks")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
