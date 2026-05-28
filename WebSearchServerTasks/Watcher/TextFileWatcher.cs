@@ -1,4 +1,4 @@
-﻿namespace WebSearchServerTasks.Warcher;
+﻿namespace WebSearchServerTasks.Watcher;
 
 public class TextFileWatcher
 {
