@@ -38,8 +38,8 @@ class Program
         string prefix = "http://localhost:5050/";
         HttpServer server = new HttpServer(prefix, requestQueue);
 
-        Task watcherTask = watcher.StartAsync(cts.Token);
-
+        Task watcherTask = Task.Run(() => watcher.Start(), cts.Token);
+        
         Task serverTask = server.StartAsync(cts.Token);
 
         Task workerTask = Task.Run(async () =>
