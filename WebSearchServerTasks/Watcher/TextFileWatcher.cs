@@ -1,20 +1,25 @@
 ﻿using System;
 using System.IO;
+using WebSearchServerTasks.Cache;
 using WebSearchServerTasks.Logging;
 
 namespace WebSearchServerTasks.Watcher
 {
-    class TextFileWatcher
+   public class TextFileWatcher
     {
         private readonly FileSystemWatcher _watcher;
         private readonly Logger _logger = Logger.Instance;
+        private readonly SearchCache _cache;
 
-        public TextFileWatcher(string textFilesPath)
+        public TextFileWatcher(string textFilesPath, SearchCache cache)
         {
+            _cache = cache;
             _watcher = new FileSystemWatcher(textFilesPath);
             _watcher.Filter = "*.txt";
-            _watcher.NotifyFilter = NotifyFilters.FileName;
-            _watcher.Created += OnFileCreated;
+            _watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
+            _watcher.Created += OnFileChanged;
+            _watcher.Changed += OnFileChanged;
+            _watcher.Deleted += OnFileChanged;
             _watcher.Error += OnFileError;
         }
 
@@ -29,17 +34,19 @@ namespace WebSearchServerTasks.Watcher
             _watcher.EnableRaisingEvents = false;
             _logger.Info($"[TextFileWatcher] Pracenje foldera zaustavljeno.");
         }
-
-        private void OnFileCreated(object sender, FileSystemEventArgs e)
-        {
-            _logger.Info($"[TextFileWatcher] Novi fajl detektovan: {e.Name}");
-        }
+        
         
         private void OnFileError(object sender, ErrorEventArgs e)
         {
             _logger.Info($"[TextFileWatcher] Greska: {e.GetException().Message}");
         }
-
+        
+        private void OnFileChanged(object sender, FileSystemEventArgs e)
+        {
+            _logger.Watch($"{e.ChangeType}: {e.Name}");
+            _cache.Clear();
+            _logger.Watch("Kes obrisan zbog promene fajlova.");
+        }
         public void Dispose()
         {
             _watcher.Dispose();

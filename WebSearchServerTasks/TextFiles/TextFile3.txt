@@ -1,0 +1,9 @@
+﻿Web server je softverska aplikacija koja prima zahteve od klijenata i salje im odgovore. U ovom projektu server slusa na portu 5050 i prima GET zahteve iz browsera. Kljucne reci se prosledjuju kroz URL razdvojene znakom ampersand. Server pretrazuje sve tekstualne fajlove u svom direktorijumu i broji koliko puta se svaka trazena rec pojavljuje.
+
+ThreadPool je mehanizam koji odrzava skup vec kreiranih niti koje se mogu ponovo koristiti za izvrsavanje zadataka. Kreiranje nove niti za svaki zahtev bilo bi preskupo jer svaka nit zauzima memoriju za svoj stek. Umesto toga ThreadPool dodeljuje zadatke slobodnim nitima iz svog skupa sto znatno smanjuje overhead. U kombinaciji sa Task objektima dobija se efikasan sistem za paralelnu obradu zahteva.
+
+Cache stampede je problem koji nastaje kada veliki broj zahteva istovremeno trazi isti resurs koji nije u kesu. Bez zastite svi zahtevi bi pokrenuli istu pretragu paralelno sto je nepotreban trosak resursa. Resenje je da samo prvi zahtev pokrene pretragu dok ostali cekaju na rezultat. TaskCompletionSource omogucava kreiranje Task objekta ciji se rezultat postavlja rucno kada pretraga zavrsi.
+
+Graceful shutdown je mehanizam koji omogucava uredno gasenje servera bez gubitka podataka ili prekidanja aktivnih zahteva. CancellationToken se koristi za signalizaciju svim komponentama da treba da zavrse svoj rad. Kada korisnik pritisne taster Q server prestaje da prima nove zahteve zavrsava obradu aktivnih zahteva i oslobadja sve resurse pre gasenja.
+
+Logovanje je vazno za pracenje rada servera i dijagnostiku problema. Thread safe logger garantuje da se poruke iz razlicitih niti ne mesaju prilikom ispisa. Singleton obrazac osigurava da postoji samo jedna instanca loggera kroz celu aplikaciju. Svaka poruka sadrzi vremenski pecat nivo ozbiljnosti i tekst poruke.

@@ -33,7 +33,7 @@ class Program
         ResponseBuilder responseBuilder = new ResponseBuilder();
         RequestQueue requestQueue = new RequestQueue(maxSize: 100);
         TaskWorker worker = new TaskWorker(fileSearcher, cache, responseBuilder, maxConcurrent: 10);
-        TextFileWatcher watcher = new TextFileWatcher(textFilesPath);
+        TextFileWatcher watcher = new TextFileWatcher(textFilesPath,cache);
         
         string prefix = "http://localhost:5050/";
         HttpServer server = new HttpServer(prefix, requestQueue);
@@ -66,6 +66,7 @@ class Program
             if (key.Key == ConsoleKey.Q)
             {
                 logger.Info("Zaustavljanje servera...");
+                watcher.Stop();
                 cts.Cancel();
                 break;
             }

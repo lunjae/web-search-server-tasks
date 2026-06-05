@@ -24,6 +24,7 @@ namespace WebSearchServerTasks.Server
         public async Task StartAsync(CancellationToken ct)
         {
             _listener.Start();
+            ct.Register(() => _listener.Stop());
             _logger.Info($"[HttpServer] Server pokrenut na  {_prefix}");
 
             try

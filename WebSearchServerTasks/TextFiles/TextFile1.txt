@@ -1,1 +1,7 @@
-﻿
+﻿Sistemsko programiranje je predmet koji se bavi razumevanjem kako operativni sistemi upravljaju resursima racunara. Studenti uce o procesima, nitima i mehanizmima sinhronizacije koji omogucavaju bezbedan konkurentni pristup deljenim resursima. Na Elektronskom fakultetu u Nisu, poznatom kao Elfak, ovaj predmet je jedan od najvaznijih u oblasti racunarstva.
+
+Projekat iz sistemskog programiranja zahteva implementaciju servera koji moze da obradjuje vise zahteva istovremeno. Server koristi threadpool za efikasno upravljanje nitima i taskove za asinhronu obradu. Kesiranje rezultata je kljucno za postizanje dobrih performansi jer smanjuje broj nepotrebnih operacija citanja sa diska.
+
+Programiranje servera u jeziku C# pruza mogucnost koriscenja naprednih mehanizama kao sto su lock, Monitor, SemaphoreSlim i TaskCompletionSource. Ovi alati omogucavaju programerima da pisu kod koji je bezbedan za izvrsavanje u visenitnom okruzenju. Bez pravilne sinhronizacije, konkurentni pristup deljenim resursima moze dovesti do nepredvidivih gresaka.
+
+Web server prima HTTP zahteve od klijenata putem browsera i vraca odgovore u HTML formatu. Svaki zahtev se parsira kako bi se izvukle kljucne reci za pretragu. Rezultati pretrage prikazuju broj pojavljivanja svake reci u svakom tekstualnom fajlu koji se nalazi u root direktorijumu naseg servera.

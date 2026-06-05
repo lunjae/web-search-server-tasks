@@ -116,11 +116,24 @@ namespace WebSearchServerTasks.Cache
     
             tcs?.SetException(ex);
         }
+        
+        public void Clear()
+        {
+            lock (_lock)
+            {
+                _cache.Clear();
+                _lruOrder.Clear();
+                _logger.Cache("Kes kompletno obrisan.");
+            }
+        }
     }
+    
     
     public class CacheEntry
     {
         public Dictionary<string, Dictionary<string, int>> Results { get; set; }
         public LinkedListNode<string> LruNode { get; set; }
     }
+    
+    
 }
