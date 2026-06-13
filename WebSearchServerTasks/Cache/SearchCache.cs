@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using WebSearchServerTasks.Logging;
 
@@ -7,7 +6,7 @@ namespace WebSearchServerTasks.Cache
 {
     public class SearchCache
     {
-        private readonly Dictionary<string, CacheEntry>_cache;
+        private readonly Dictionary<string, CacheEntry> _cache;
         private readonly LinkedList<string> _lruOrder;
         private readonly object _lock = new object();
         private readonly int _maxSize;
@@ -15,34 +14,51 @@ namespace WebSearchServerTasks.Cache
 
         private readonly Dictionary<string, TaskCompletionSource<Dictionary<string, Dictionary<string, int>>>>
             _inProgress;
-        
+
         public SearchCache(int maxSize = 50)
         {
             _cache = new Dictionary<string, CacheEntry>();
             _lruOrder = new LinkedList<string>();
             _maxSize = maxSize;
-            _inProgress = new Dictionary<string, TaskCompletionSource<Dictionary<string, Dictionary<string, int>>>>();
+            _inProgress =
+                new Dictionary<string, TaskCompletionSource<Dictionary<string, Dictionary<string, int>>>>();
         }
-        
-        public Dictionary<string, Dictionary<string, int>> Get(string key)
+
+        // Atomična operacija — Get + WaitForResult u jednom lock bloku
+        // Vraća:
+        // (rezultat, null)  — HIT, odmah nastavljamo
+        // (null, task)      — u toku, čekamo
+        // (null, null)      — MISS, mi pretražujemo
+        public (Dictionary<string, Dictionary<string, int>> result,
+            Task<Dictionary<string, Dictionary<string, int>>> waitTask) GetOrRegister(string key)
         {
             lock (_lock)
             {
-                if (!_cache.ContainsKey(key))
+                // 1. Provjeri keš
+                if (_cache.ContainsKey(key))
                 {
-                    _logger.Cache($"MISS - {key}");
-                    return null;
+                    CacheEntry entry = _cache[key];
+                    _lruOrder.Remove(entry.LruNode);
+                    _lruOrder.AddFirst(entry.LruNode);
+                    _logger.Cache($"HIT - {key}");
+                    return (entry.Results, null);
                 }
 
-                CacheEntry entry = _cache[key];
-                _lruOrder.Remove(entry.LruNode);
-                _lruOrder.AddFirst(entry.LruNode);
+                // 2. Provjeri da li je već u toku
+                if (_inProgress.ContainsKey(key))
+                {
+                    _logger.Cache($"WAIT - {key}");
+                    return (null, _inProgress[key].Task);
+                }
 
-                _logger.Cache($"HIT - {key}");
-                return entry.Results;
+                // 3. Prva nit — registruj i idi na pretragu
+                _logger.Cache($"MISS - {key}");
+                var tcs = new TaskCompletionSource<Dictionary<string, Dictionary<string, int>>>();
+                _inProgress[key] = tcs;
+                return (null, null);
             }
         }
-        
+
         public void Set(string key, Dictionary<string, Dictionary<string, int>> results)
         {
             lock (_lock)
@@ -70,25 +86,11 @@ namespace WebSearchServerTasks.Cache
                 _logger.Cache($"SET - {key}");
             }
         }
-        
-        
-        public Task<Dictionary<string, Dictionary<string, int>>> WaitForResultAsync(string key)
-        {
-            lock (_lock)
-            {
-                if (_inProgress.ContainsKey(key))
-                    return _inProgress[key].Task;
-        
-                var tcs = new TaskCompletionSource<Dictionary<string, Dictionary<string, int>>>();
-                _inProgress[key] = tcs;
-                return null;
-            }
-        }
 
         public void CompleteResult(string key, Dictionary<string, Dictionary<string, int>> results)
         {
             TaskCompletionSource<Dictionary<string, Dictionary<string, int>>> tcs = null;
-    
+
             lock (_lock)
             {
                 if (_inProgress.ContainsKey(key))
@@ -97,14 +99,14 @@ namespace WebSearchServerTasks.Cache
                     _inProgress.Remove(key);
                 }
             }
-    
+
             tcs?.SetResult(results);
         }
 
         public void FailResult(string key, Exception ex)
         {
             TaskCompletionSource<Dictionary<string, Dictionary<string, int>>> tcs = null;
-    
+
             lock (_lock)
             {
                 if (_inProgress.ContainsKey(key))
@@ -113,10 +115,10 @@ namespace WebSearchServerTasks.Cache
                     _inProgress.Remove(key);
                 }
             }
-    
+
             tcs?.SetException(ex);
         }
-        
+
         public void Clear()
         {
             lock (_lock)
@@ -127,13 +129,10 @@ namespace WebSearchServerTasks.Cache
             }
         }
     }
-    
-    
+
     public class CacheEntry
     {
         public Dictionary<string, Dictionary<string, int>> Results { get; set; }
         public LinkedListNode<string> LruNode { get; set; }
     }
-    
-    
 }

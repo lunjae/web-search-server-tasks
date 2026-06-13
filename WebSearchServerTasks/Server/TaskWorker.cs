@@ -18,7 +18,6 @@ namespace WebSearchServerTasks.Server
         private readonly Logger _logger = Logger.Instance;
         private readonly SemaphoreSlim _concurrencySemaphore;
 
-
         public TaskWorker(FileSearcher fileSearcher, SearchCache cache, ResponseBuilder responseBuilder,
             int maxConcurrent = 10)
         {
@@ -40,41 +39,47 @@ namespace WebSearchServerTasks.Server
 
                 _logger.Info($"Obrada zahteva - ključne reči: {cacheKey}");
 
-                Dictionary<string, Dictionary<string, int>> results = _cache.Get(cacheKey);
+                // Atomična operacija — Get + Register u jednom lock bloku
+                var (results, waitTask) = _cache.GetOrRegister(cacheKey);
 
-                if (results == null)
+                if (waitTask != null)
                 {
-                    Task<Dictionary<string, Dictionary<string, int>>> waitTask = _cache.WaitForResultAsync(cacheKey);
-
-                    if (waitTask != null)
+                    // Druga/treća/... nit — čeka na rezultat prve niti
+                    results = await waitTask;
+                }
+                else if (results == null)
+                {
+                    // Prva nit — pretražuje fajlove
+                    try
                     {
-                        results = await waitTask;
+                        results = await _fileSearcher.SearchAsync(keywords, ct);
+                        _cache.Set(cacheKey, results);
+                        _cache.CompleteResult(cacheKey, results);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        try
-                        {
-                            results = await _fileSearcher.SearchAsync(keywords, ct);
-                            _cache.Set(cacheKey, results);
-                            _cache.CompleteResult(cacheKey, results);
-                        }
-                        catch (Exception ex)
-                        {
-                            _cache.FailResult(cacheKey, ex);
-                            throw;
-                        }
+                        _cache.FailResult(cacheKey, ex);
+                        throw;
                     }
                 }
+                // else — HIT, results već popunjeni iz keša
 
                 var capturedResults = results;
                 await Task.FromResult(capturedResults)
-                    .ContinueWith(searchTask => { return _responseBuilder.BuildHtml(searchTask.Result, keywords); }, ct,
-                        TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default)
-                    .ContinueWith(htmlTask =>
-                    {
-                        SendResponse(context, htmlTask.Result);
-                        _logger.Info($"Zahtev završen: {cacheKey}");
-                    }, ct, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
+                    .ContinueWith(
+                        searchTask => _responseBuilder.BuildHtml(searchTask.Result, keywords),
+                        ct,
+                        TaskContinuationOptions.OnlyOnRanToCompletion,
+                        TaskScheduler.Default)
+                    .ContinueWith(
+                        htmlTask =>
+                        {
+                            SendResponse(context, htmlTask.Result);
+                            _logger.Info($"Zahtev završen: {cacheKey}");
+                        },
+                        ct,
+                        TaskContinuationOptions.OnlyOnRanToCompletion,
+                        TaskScheduler.Default);
             }
             catch (OperationCanceledException)
             {
@@ -89,7 +94,8 @@ namespace WebSearchServerTasks.Server
                 _concurrencySemaphore.Release();
             }
         }
-        private void SendResponse(HttpListenerContext context, string html)//Helper metoda
+
+        private void SendResponse(HttpListenerContext context, string html)
         {
             try
             {
