@@ -1,0 +1,9 @@
+﻿Elektronski fakultet u Nisu, cesto nazivan Elfak, obrazuje studente iz oblasti elektrotehnike i racunarstva. Predmet sistemsko programiranje je deo kurikuluma koji studentima pruza prakticno iskustvo u razvoju konkurentnih sistema. Studenti kroz projekat uce kako da implementiraju server koji efikasno obradjuje zahteve.
+
+Asinhrono programiranje je moderna paradigma koja omogucava efikasnije koriscenje sistemskih resursa. Umesto da nit ceka na zavrsetak operacije, ona moze da nastavi sa drugim poslom dok se operacija izvrsava u pozadini. U jeziku C# async i await kljucne reci pojednostavljuju pisanje asinhronog koda. Task objekat predstavlja asinhronu operaciju ciji rezultat moze biti dostupan u buducnosti.
+
+Kesiranje je tehnika cuvanja rezultata prethodno obavljenih operacija kako bi se izbegle ponovne skupocene operacije. LRU strategija odredjuje koji se elementi izbacuju iz kesa kada je kapacitet popunjen. Elementi koji su najduze nekorisceni prvi se uklanjaju. Ovo je posebno korisno za web servere koji primaju veliki broj istih zahteva.
+
+Sinhronizacija izmedju niti je kljucni koncept u sistemskom programiranju. Bez pravilne sinhronizacije moze doci do race condition problema gde vise niti istovremeno pristupa istom resursu. Lock mehanizam garantuje da samo jedna nit u datom trenutku moze pristupiti kriticnoj sekciji koda. SemaphoreSlim je napredniji mehanizam koji dozvoljava kontrolisan broj istovremenih pristupa i podrzava asinhrono cekanje.
+
+Projekat zahteva implementaciju mehanizma za detekciju promena u fajlovima. FileSystemWatcher klasa u C# omogucava automatsko obavestavanje kada se novi fajl pojavi u direktorijumu. Ovo je korisno jer server ne mora da se restartuje da bi prepoznao nove tekstualne fajlove za pretragu.

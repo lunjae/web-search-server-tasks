@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WebSearchServerTasks")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5681eb1c9eb6b423d897865c48c84f8c528c4fc5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ee5a3b2c3c27e115c543c8f7e11b4900302fb26e")]
 [assembly: System.Reflection.AssemblyProductAttribute("WebSearchServerTasks")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WebSearchServerTasks")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
